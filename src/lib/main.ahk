@@ -281,12 +281,14 @@ main_init_plugin(key:="all")
     Switch key
     {
     case "all":
-        for i,k in ["default","wsl","virtualBox","windows","android"]
+        for i,k in ["default","wsl","pro","virtualBox","windows","android"]
             main_init_plugin(k)
     case "default":
         default_init()
     case "wsl":
         wsl_init()
+    case "pro":
+        pro_init()
     case "virtualBox":
         virtualBox_init()
     case "windows":
