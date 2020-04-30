@@ -281,7 +281,7 @@ main_init_plugin(key:="all")
     Switch key
     {
     case "all":
-        for i,k in ["default","wsl","windows"]
+        for i,k in ["default","wsl","windws","android"]
             main_init_plugin(k)
     case "default":
         default_init()
@@ -289,5 +289,7 @@ main_init_plugin(key:="all")
         wsl_init()
     case "windows":
         windows_init()
+    case "android":
+        android_init()
     }
 }
