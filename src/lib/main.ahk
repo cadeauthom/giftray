@@ -281,10 +281,12 @@ main_init_plugin(key:="all")
     Switch key
     {
     case "all":
-        for i,k in ["default","windows"]
+        for i,k in ["default","wsl","windows"]
             main_init_plugin(k)
     case "default":
         default_init()
+    case "wsl":
+        wsl_init()
     case "windows":
         windows_init()
     }
