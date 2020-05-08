@@ -77,14 +77,20 @@ windows_volume(args, test:=0)
 windows_MuteUnmute(args, test:=0)
 {
     error_msg := ""
+    if args["device"]
+        device := args["device"]
+    else
+        error_msg := error_msg "Error, device not configured (Capture/Playback)" "`r`n"
+    if ( VA_GetMasterMute(device) = "")
+        error_msg := error_msg "Error, device """ device """ not found (Capture/Playback)" "`r`n"
     if (error_msg or test)
     {
         if not test
             msgbox % error_msg
         return error_msg
     }
-    device_name := VA_GetDeviceName(VA_GetDevice("Capture"))
-    toMute := VA_GetMasterMute( "Capture")
+    device_name := VA_GetDeviceName(VA_GetDevice(device))
+    toMute := VA_GetMasterMute(device)
     if toMute
     {
         toMute := 0
@@ -93,7 +99,7 @@ windows_MuteUnmute(args, test:=0)
         toMute := 1
         str := "Mute"
     }
-    VA_SetMasterMute( toMute , "Capture")
+    VA_SetMasterMute( toMute , device )
     return str " " device_name
 }
 windows_addHibernate(args, test:=0)
