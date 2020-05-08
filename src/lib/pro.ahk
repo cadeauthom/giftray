@@ -21,22 +21,19 @@ pro_init()
     if called
         return
     called := true
-    main_createMenu(    "Unconnect pro"
-                        ,"pro_unconnectpro"
-                        ,"Ctrl + Win + BS")
-
-    opt := {veracrypt:"veracrypt.exe"}
-    main_createMenu(    "Umount All"
-                        ,"pro_umountAll"
-                        ,"Ctrl + Win + ²"
-                        ,opt)
-    opt := {drive:"v"
-           ,path:"C:\my.vc"
-           ,veracrypt:"veracrypt.exe"}
-    main_createMenu(    "Mount V"
-                        ,"pro_mountV"
-                        ,"Win + ²"
-                        ,opt)
+    main_createMenu(    {name:"Unconnect pro"
+                        ,function:"pro_unconnectpro"
+                        ,hhk:"Ctrl + Win + BS"})
+    main_createMenu(    {name:"Umount All"
+                        ,function:"pro_umountAll"
+                        ,hhk:"Ctrl + Win + ²"
+                        ,veracrypt:"veracrypt.exe"})
+    main_createMenu(    {name:"Mount V"
+                        ,function:"pro_mountV"
+                        ,hhk:"Win + ²"
+                        ,drive:"v"
+                        ,path:"C:\my.vc"
+                        ,veracrypt:"veracrypt.exe"})
     return
 }
 
