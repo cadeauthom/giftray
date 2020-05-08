@@ -52,7 +52,7 @@ windows_volume(args, test:=0)
         device := args["device"]
     else
         error_msg := error_msg "Error, device not configured (Capture/Playback)" "`r`n"
-    if ! VA_GetMasterVolume("",device)
+    if (VA_GetMasterVolume("",device) = "")
         error_msg := error_msg "Error, device """ device """ not found (Capture/Playback)" "`r`n"
     if args["direction"]
         direction := args["direction"]
