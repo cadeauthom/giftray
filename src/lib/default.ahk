@@ -45,6 +45,10 @@ default_init()
                          ,location:"active"
                          ,params:"NULL"
                          ,hide:false})
+    main_createMenu(    "Lynk"
+                        ,"default_link"
+                        ,""
+                        ,{link:"to_be_defined"})
     return true
 }
 /*
@@ -54,6 +58,7 @@ default_about
 default_reload
 default_exit
 default_script
+default_link
 ---------------
 default_nothing
 default_popwarning
@@ -347,6 +352,21 @@ default_reload(arg)
 default_exit(arg)
 {
     exitApp
+}
+default_link(args, test:=0)
+{
+    error_msg := ""
+    if (args["link"])
+        link := args["link"]
+    else
+        error_msg := error_msg "Error, link not configured" "`r`n"
+    if (error_msg or test)
+    {
+        if not test
+            msgbox % error_msg
+        return error_msg
+    }
+    Run, %link%
 }
 default_script(args, test:=0)
 {
