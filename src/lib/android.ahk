@@ -26,10 +26,13 @@ android_init()
            ,port:"5555"
            ,ip:"Null"
            ,network:"all"}
-    main_createMenu(    "Connect phone"
-                        ,"android_connect"
-                        ,""
-                        ,opt)
+    main_createMenu(   {name:"Connect phone"
+                       ,function:"android_connect"
+                       ,scrcpy:"Null"
+                       ,nmap:"nmap"
+                       ,port:"5555"
+                       ,ip:"Null"
+                       ,network:"all"})
     return
 }
 

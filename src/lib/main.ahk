@@ -178,22 +178,48 @@ main_GetCurrentPath(hwnd="") {
         }
     return ToReturn
 }
-main_createMenu(name,function,pos:=0,opt:=1)
+main_createMenu(arg,pos:=0)
 {
-    position:=0
-    hhk:=""
-    print := SubStr(name, 1, 32)
-    if pos is integer
-        position:=pos
+    if arg["function"]
+        function := arg.Delete("function")
     else
-        hhk := main_validate_hhk(pos)
-    if opt is integer
-        visible := opt
-    else
-        visible := 1
+        return
     icon := global_var.icoPath function ".ico"
     IfNotExist % icon
         icon := global_var.default_ico
+
+    if arg["name"]
+        name := arg.Delete("name")
+    else
+        return
+    print := SubStr(name, 1, 32)
+
+    if arg["hhk"] {
+        hhk := arg.Delete("hhk")
+        hhk := main_validate_hhk(hhk)
+    } else
+        hhk := ""
+
+    position:=0
+    if pos is integer
+        position:=pos
+
+    visible := 0
+    if arg["not_in_menu"]
+        arg.Delete("not_in_menu")
+    else
+        visible := 1
+
+    if arg["quick"]
+        quick := arg.Delete("quick")
+    else
+        quick := 0
+
+    if arg["error"]
+        error := arg.Delete("error")
+    else
+        error := ""
+
     global_var.avail[function]:={ function:function
                                     ,ico:icon
                                     ,pos:position
@@ -201,18 +227,11 @@ main_createMenu(name,function,pos:=0,opt:=1)
                                     ,hhk:hhk
                                     ,menu:visible
                                     ,nb:0
-                                    ,arg:[]
-                                    ,error:""}
-    if (not (opt is integer)) {
-        for k,v in opt {
-            if (k = "error")
-                global_var.avail[function].error := v
-            else if ( k = "visible" )
-                global_var.avail[function].menu := v
-            else
-                global_var.avail[function].arg[k] := v
-        }
-    }
+                                    ,arg:arg
+                                    ,error:error
+                                    ,quick:quick}
+
+
     if position < 0
     {
         global_var.install[position] := function

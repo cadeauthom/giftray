@@ -21,35 +21,76 @@ windows_init()
     if called
         return
     called := true
-    opt := {visible:0}
-    main_createMenu(    "Always on Top"
-                        ,"windows_WinAlwaysontop"
-                        ,"Win + SPACE"
-                        ,opt)
-    opt := {mode:"regedit/wmic"}
-    main_createMenu(    "Reload Microphone"
-                        ,"windows_ReloadMic"
-                        ,"Ctrl + Win + m"
-                        ,opt)
-    main_createMenu(    "Allow hibernation"
-                        ,"windows_addHibernate"
-                        ,"")
-    main_createMenu(    "Mute/Unmute"
-                        ,"windows_MuteUnmute"
-                        ,"Win + <")
+    main_createMenu(    {name:"Always on Top"
+                        ,function:"windows_WinAlwaysontop"
+                        ,hhk:"Win + SPACE"
+                        ,not_in_menu:1})
+    main_createMenu(    {name:"Reload Microphone"
+                        ,function:"windows_ReloadMic"
+                        ,hhk:"Ctrl + Win + m"
+                        ,mode:"regedit/wmic"})
+    main_createMenu(    {name:"Allow hibernation"
+                        ,function:"windows_addHibernate"})
+    main_createMenu(    {name:"Mute/Unmute"
+                        ,function:"windows_MuteUnmute"
+                        ,hhk:"Win + <"
+                        ,device:"Capture/Playback"})
+    main_createMenu(    {name:"Volume Change"
+                        ,function:"windows_volume"
+                        ,hhk:"Alt + NumpadSub" ;NumpadAdd
+                        ,quick:1
+                        ,not_in_menu:1
+                        ,device:"Capture/Playback"
+                        ,direction:"Up/Down"})
+
     return
 }
-windows_MuteUnmute(args, test:=0)
+windows_volume(args, test:=0)
 {
     error_msg := ""
+    if args["device"]
+        device := args["device"]
+    else
+        error_msg := error_msg "Error, device not configured (Capture/Playback)" "`r`n"
+    if (VA_GetMasterVolume("",device) = "")
+        error_msg := error_msg "Error, device """ device """ not found (Capture/Playback)" "`r`n"
+    if args["direction"]
+        direction := args["direction"]
+    else
+        error_msg := error_msg "Error, direction not configured (Up/Down)" "`r`n"
+    StringLower, direction, direction , T
+    if ( direction = "Up" )
+        change = 2
+    else if ( direction = "Down" )
+        change = -2
+    else
+        error_msg := error_msg "Error, direction """ direction """ not authorized (Up/Down)" "`r`n"
     if (error_msg or test)
     {
         if not test
             msgbox % error_msg
         return error_msg
     }
-    device_name := VA_GetDeviceName(VA_GetDevice("Capture"))
-    toMute := VA_GetMute( , "Capture")
+    VA_SetMasterVolume(VA_GetMasterVolume("",device)+change,"",device)
+    return
+}
+windows_MuteUnmute(args, test:=0)
+{
+    error_msg := ""
+    if args["device"]
+        device := args["device"]
+    else
+        error_msg := error_msg "Error, device not configured (Capture/Playback)" "`r`n"
+    if ( VA_GetMasterMute(device) = "")
+        error_msg := error_msg "Error, device """ device """ not found (Capture/Playback)" "`r`n"
+    if (error_msg or test)
+    {
+        if not test
+            msgbox % error_msg
+        return error_msg
+    }
+    device_name := VA_GetDeviceName(VA_GetDevice(device))
+    toMute := VA_GetMasterMute(device)
     if toMute
     {
         toMute := 0
@@ -58,7 +99,7 @@ windows_MuteUnmute(args, test:=0)
         toMute := 1
         str := "Mute"
     }
-    VA_SetMute( toMute , , "Capture")
+    VA_SetMasterMute( toMute , device )
     return str " " device_name
 }
 windows_addHibernate(args, test:=0)

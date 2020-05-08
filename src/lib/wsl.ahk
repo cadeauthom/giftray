@@ -22,17 +22,15 @@ wsl_init()
         return
     called := true
 
-    opt := {vcxsrv:"vcxsrv.exe"}
-    main_createMenu(    "Terminator"
-                        ,"wsl_terminator"
-                        ,"Ctrl + Win + t"
-                        ,opt)
-    opt := {port:"8080"
-           ,host:"hostname"}
-    main_createMenu(    "Set Proxy"
-                        ,"wsl_setproxy"
-                        ,"Ctrl + Win + p"
-                        ,opt)
+    main_createMenu(    {name:"Terminator"
+                        ,function:"wsl_terminator"
+                        ,hhk:"Ctrl + Win + t"
+                        ,vcxsrv:"vcxsrv.exe"})
+    main_createMenu(    {name:"Set Proxy"
+                        ,function:"wsl_setproxy"
+                        ,hhk:"Ctrl + Win + p"
+                        ,port:"8080"
+                        ,host:"hostname"})
     return
 }
 
