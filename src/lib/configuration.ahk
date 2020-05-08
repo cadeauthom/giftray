@@ -257,6 +257,8 @@ configuration_cp_default(tmp,orig)
         else
             if (not SubStr(tmp.ico, 2 , 1) = ":")
                 tmp.ico := global_var.icoPath  tmp.ico
+        if ( ! RegExMatch(tmp.ico, "\.ico$"))
+            tmp.ico :=  tmp.ico ".ico"
         if (not FileExist(tmp.ico))
             tmp.ico := orig.ico
     }
