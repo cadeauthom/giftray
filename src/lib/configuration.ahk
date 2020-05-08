@@ -243,6 +243,7 @@ configuration_init_empty_menu(tmp)
     tmp.menu := 0
     tmp.error := ""
     tmp.arg := []
+    tmp.quick := 0
 }
 configuration_cp_default(tmp,orig)
 {
@@ -276,6 +277,8 @@ configuration_cp_default(tmp,orig)
         if tmp.arg[opt] = ""
             tmp.arg[opt] := val
     }
+    if orig.quick
+        tmp.quick := orig.quick
     return
 }
 configuration_add_real(m,tmp)
@@ -292,6 +295,7 @@ configuration_add_real(m,tmp)
                             ,confprint:tmp.print
                             ,hhk:tmp.hhk
                             ,menu:tmp.menu
+                            ,quick:tmp.quick
                             ,arg:tmp.arg}
     if nb > 0
         global_var.real[m].print := Format("{:s}({:i})",global_var.real[m].print,nb)

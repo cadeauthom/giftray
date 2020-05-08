@@ -26,20 +26,19 @@ tray_initialisation()
             i := A_Index
             key := global_var.install[i]
             if global_var.real[key].menu
-            {
                 tray_addMenu("Tray"
                             ,global_var.real[key].print
                             ,global_var.real[key].function
                             ,global_var.real[key].ico
+                            ,global_var.real[key].quick
                             ,global_var.real[key].arg
                             ,global_var.real[key].confprint)
-            }
             if global_var.real[key].hhk != ""
-            {
-                hk := global_var.real[key].hhk
-                func := % global_var.real[key].function
-                tray_DefineHotKey(hk, func, global_var.real[key].arg,global_var.real[key].confprint)
-            }
+                tray_DefineHotKey(       global_var.real[key].hhk
+                                        ,global_var.real[key].function
+                                        ,global_var.real[key].quick
+                                        ,global_var.real[key].arg
+                                        ,global_var.real[key].confprint)
         }
         Menu, Tray, Add
     }
@@ -54,6 +53,7 @@ tray_initialisation()
                         ,val.print
                         ,"default_nothing"
                         ,val.ico
+                        ,1
                         ,[])
         }
         else if 0 and not val.menu
@@ -63,6 +63,7 @@ tray_initialisation()
                         ,val.print
                         ,"default_popwarning"
                         ,val.ico
+                        ,1
                         ,[])
         }
     }
@@ -75,27 +76,28 @@ tray_initialisation()
                         ,val.print
                         ,"default_popwarning"
                         ,val.ico
+                        ,1
                         ,[])
         }
     }
     if not_menu = 0
     {
-        tray_addMenu("not_menu","Empty","default_nothing",global_var.empty_ico,[])
+        tray_addMenu("not_menu","Empty","default_nothing",global_var.empty_ico,1,[])
     }
     if not_installed = 0
     {
-        tray_addMenu("notinstall_menu","Empty","default_nothing",global_var.empty_ico,[])
+        tray_addMenu("notinstall_menu","Empty","default_nothing",global_var.empty_ico,1,[])
     }
     Menu, Tray, Add, Inactive, :notinstall_menu
     Menu, Tray, Add, Not clickable, :not_menu
     has_error := 0
     for m,msg in global_var.err {
-        tray_addMenu("error_menu",m,"default_poperror",global_var.default_ico,{error:msg})
+        tray_addMenu("error_menu",m,"default_poperror",global_var.default_ico,1,{error:msg})
         has_error := 1
     }
     if ! has_error
     {
-        tray_addMenu("error_menu","Empty","default_nothing",global_var.empty_ico,[])
+        tray_addMenu("error_menu","Empty","default_nothing",global_var.empty_ico,1,[])
     }
     Menu, Tray, Add, In Error, :error_menu
     Menu, Tray, Add
@@ -108,29 +110,32 @@ tray_initialisation()
                     ,global_var.avail[key].print
                     ,global_var.avail[key].function
                     ,global_var.avail[key].ico
+                    ,global_var.avail[key].quick
                     ,[])
     }
     Menu, Tray, Tip, % global_var.name
 }
 
 ;------------------------------------------------------------
-tray_DefineHotKey(hk, fun, arg, print:=0)
+tray_DefineHotKey(hk, fun, quick, arg,print:=0)
 {
     hk :=   {type:"hk"
             ,fun:fun
             ,hk:hk
+            ,quick:quick
             ,arg:arg
             ,print:print}
     tray_Wrapper(hk)
     return
 }
-tray_addMenu(tray, key, fun, ico, arg, print:=0)
+tray_addMenu(tray, key, fun, ico, quick, arg, print:=0)
 {
     menu := {type: "menu"
             ,tray:tray
             ,fun:fun
             ,key:key
             ,ico:ico
+            ,quick:quick
             ,arg:arg
             ,print:print}
     tray_Wrapper(menu)
@@ -141,6 +146,7 @@ tray_Wrapper(fn)
     Static funs := {}
     Static args := {}
     Static info := {}
+    Static loop := {}
     Static time := 400
     Static id := 1
     Static nb := 6
@@ -184,38 +190,41 @@ tray_Wrapper(fn)
             info[key] := fn.key
         funs[key] := Func(fun)
         args[key] := arg
+        loop[key] := fn.quick
     }
     return
 MenuHandle:
-    if (global_var.icos.MaxIndex() > 1)
-        SetTimer, WrapperLoopIco, %time%
     key := A_ThisMenuItem
     GoSub WrapperHandle
     return
 HKHandle:
-    if (global_var.icos.MaxIndex() > 1)
-        SetTimer, WrapperLoopIco, %time%
     key := A_ThisHotkey
     GoSub WrapperHandle
     return
 WrapperHandle:
+    if ! loop[key]
+        if (global_var.icos.MaxIndex() > 1)
+            SetTimer, WrapperLoopIco, %time%
     msg := funs[key].(args[key])
-    if msg
+    if ! loop[key]
     {
-        Menu Tray, NoIcon
-        Menu Tray, Icon
-        TrayTip, % info[key], % msg, , 0x30
-    }
-    SetTimer,WrapperLoopIco,Off
-    if (global_var.icos.MaxIndex() > 1)
-    {
-        Loop, % max(nb - id, 0)
+        if msg
         {
-            Sleep, % time
-            GoSub WrapperLoopIco
+            Menu Tray, NoIcon
+            Menu Tray, Icon
+            TrayTip, % info[key], % msg, , 0x30
         }
-        Sleep, % time
-        Menu, Tray, Icon, % global_var.icos[1] , 1
+        SetTimer,WrapperLoopIco,Off
+        if (global_var.icos.MaxIndex() > 1)
+        {
+            Loop, % max(nb - id, 0)
+            {
+                Sleep, % time
+                GoSub WrapperLoopIco
+            }
+            Sleep, % time
+            Menu, Tray, Icon, % global_var.icos[1] , 1
+        }
     }
     Return
 WrapperLoopIco:

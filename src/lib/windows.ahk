@@ -21,22 +21,20 @@ windows_init()
     if called
         return
     called := true
-    opt := {visible:0}
-    main_createMenu(    "Always on Top"
-                        ,"windows_WinAlwaysontop"
-                        ,"Win + SPACE"
-                        ,opt)
-    opt := {mode:"regedit/wmic"}
-    main_createMenu(    "Reload Microphone"
-                        ,"windows_ReloadMic"
-                        ,"Ctrl + Win + m"
-                        ,opt)
-    main_createMenu(    "Allow hibernation"
-                        ,"windows_addHibernate"
-                        ,"")
-    main_createMenu(    "Mute/Unmute"
-                        ,"windows_MuteUnmute"
-                        ,"Win + <")
+    main_createMenu(    {name:"Always on Top"
+                        ,function:"windows_WinAlwaysontop"
+                        ,hhk:"Win + SPACE"
+                        ,not_in_menu:1})
+    main_createMenu(    {name:"Reload Microphone"
+                        ,function:"windows_ReloadMic"
+                        ,hhk:"Ctrl + Win + m"
+                        ,mode:"regedit/wmic"})
+    main_createMenu(    {name:"Allow hibernation"
+                        ,function:"windows_addHibernate"})
+    main_createMenu(    {name:"Mute/Unmute"
+                        ,function:"windows_MuteUnmute"
+                        ,hhk:"Win + <"
+                        ,device:"Capture/Playback"})
     return
 }
 windows_MuteUnmute(args, test:=0)

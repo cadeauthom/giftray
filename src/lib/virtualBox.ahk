@@ -22,18 +22,16 @@ virtualBox_init()
         return true
     called := true
 
-    opt := {vms:"my-vm01,my-vm02"
-           ,vboxmanage:"VBoxManage.exe"}
-    main_createMenu(    "Start Local Cluster"
-                        ,"virtualBox_startLocalCluster"
-                        ,"Win + c"
-                        ,opt)
-    opt := {vms:"all"
-           ,vboxmanage:"VBoxManage.exe"}
-    main_createMenu(    "Kill VMs"
-                        ,"virtualBox_KillVMs"
-                        ,"Ctrl + Win + c"
-                        ,opt)
+    main_createMenu(    {name:"Start Local Cluster"
+                        ,function:"virtualBox_startLocalCluster"
+                        ,hhk:"Win + c"
+                        ,vms:"my-vm01,my-vm02"
+                        ,vboxmanage:"VBoxManage.exe"})
+    main_createMenu(    {name:"Kill VMs"
+                        ,function:"virtualBox_KillVMs"
+                        ,hhk:"Ctrl + Win + c"
+                        ,vms:"all"
+                        ,vboxmanage:"VBoxManage.exe"})
     return
 }
 

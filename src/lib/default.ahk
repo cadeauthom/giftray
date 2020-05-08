@@ -22,33 +22,31 @@ default_init()
         return true
     called := true
     int_pos:=-1
-    main_createMenu(    "HotKey generator"
-                        ,"default_generator"
+    main_createMenu(    {name:"HotKey generator"
+                        ,function:"default_generator"}
                         ,int_pos--)
-    main_createMenu(    "Show conf"
-                        ,"default_showconf"
+    main_createMenu(    {name:"Show conf"
+                        ,function:"default_showconf"}
                         ,int_pos--)
-    main_createMenu(    "About"
-                        ,"default_about"
+    main_createMenu(    {name:"About"
+                        ,function:"default_about"}
                         ,int_pos--)
-    main_createMenu(    "Reload"
-                        ,"default_reload"
+    main_createMenu(    {name:"Reload"
+                        ,function:"default_reload"}
                         ,int_pos--)
-    main_createMenu(    "Exit"
-                        ,"default_exit"
+    main_createMenu(    {name:"Exit"
+                        ,function:"default_exit"}
                         ,int_pos--)
-    main_createMenu(    "Script"
-                        ,"default_script"
-                        ,""
-                        ,{script:"to_be_defined"
-                         ,user:A_UserName
-                         ,location:"active"
-                         ,params:"NULL"
-                         ,hide:false})
-    main_createMenu(    "Lynk"
-                        ,"default_link"
-                        ,""
-                        ,{link:"to_be_defined"})
+    main_createMenu(    {name:"Script"
+                        ,function:"default_script"
+                        ,script:"to_be_defined"
+                        ,user:A_UserName
+                        ,location:"active"
+                        ,params:"NULL"
+                        ,hide:false})
+    main_createMenu(    {name:"Lynk"
+                        ,function:"default_link"
+                        ,link:"to_be_defined"})
     return true
 }
 /*
