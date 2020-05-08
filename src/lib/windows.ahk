@@ -84,7 +84,7 @@ windows_MuteUnmute(args, test:=0)
         return error_msg
     }
     device_name := VA_GetDeviceName(VA_GetDevice("Capture"))
-    toMute := VA_GetMute( , "Capture")
+    toMute := VA_GetMasterMute( "Capture")
     if toMute
     {
         toMute := 0
@@ -93,7 +93,7 @@ windows_MuteUnmute(args, test:=0)
         toMute := 1
         str := "Mute"
     }
-    VA_SetMute( toMute , , "Capture")
+    VA_SetMasterMute( toMute , "Capture")
     return str " " device_name
 }
 windows_addHibernate(args, test:=0)
