@@ -292,8 +292,6 @@ main_setdefault()
             break
         }
     }
-    if (global_var.icos.MaxIndex() > 0)
-        Menu, Tray, Icon, % global_var.icos[1] , 1
 }
 main_init_plugin(key:="all")
 {

@@ -17,6 +17,8 @@
 */
 tray_initialisation()
 {
+    if (global_var.icos.MaxIndex() > 0)
+        Menu, Tray, Icon, % global_var.icos[1] , 1
     Menu, Tray, NoStandard
     if global_var.nb_install > 0
     {
