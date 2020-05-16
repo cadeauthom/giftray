@@ -37,6 +37,7 @@ CONFDIR = ./conf
 ICONSDIR = $(BUILDDIR)/icons
 
 SRCS = $(SRCDIR)/$(PROJECT).ahk
+LIBS = $(wildcard  $(SRCDIR)/lib/*.ahk)
 SRCINSTALL = $(SRCDIR)/setup.ahk
 EXEC = $(BUILDDIR)/$(PROJECT).exe
 
@@ -88,7 +89,7 @@ $(SETUP): $(AHKINSTALL) $(UNINSTALL) all
 	$(AHKEXE) $(AHKEXEFLAG) /in $< /icon $(ICO) /out $@
 	if [ -f $(COMPRESS) ]; then $(COMPRESS) $(COMPRESSFLAGS) $@; fi;
 
-$(EXEC): $(SRCS) $(ICO)
+$(EXEC): $(SRCS) $(LIBS) $(ICO)
 	mkdir -p $(@D)
 	@echo "globla_var.buildinfo.branch := \"$$(git rev-parse --abbrev-ref HEAD)\"" > $(PRECOMPIL)
 	@echo "globla_var.buildinfo.commit := \"$$(git log -1 --pretty=format:'%h')\"" >> $(PRECOMPIL)
