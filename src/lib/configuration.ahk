@@ -48,7 +48,7 @@ configuration_readconf(file)
                     comment := 0
                 continue
             }
-            if ( RegExMatch(key, "^#icon\s+(.+)$", p))
+            if ( RegExMatch(key, "^#icon[s]*\s+(.+)$", p))
                 if start
                     continue
                 else

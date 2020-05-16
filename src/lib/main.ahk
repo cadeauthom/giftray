@@ -29,7 +29,7 @@ global global_var :=    {name       :   A_ScriptName    ;name of the tool
                         ,use_admin  :   0               ;use admin conf because no user conf is set
                         ,doc        :   ""              ;readme file
                         ,icos       :   []              ;tray icons
-                        ,icoPath    :   ""              ;icons path
+                        ,icoPath    :   "blue"    ;icons path
                         ,default_ico:   "default_default"
                         ,empty_ico  :   "default_empty"
                         ;information about build for "about"
@@ -182,7 +182,7 @@ main_consolidate_ico()
 {
     for fct,av in global_var.avail
     {
-        global_var.avail[fct].ico := global_var.icoPath fct ".ico"
+        global_var.avail[fct].ico := global_var.icoPath "\" fct ".ico"
         IfNotExist % global_var.avail[fct].ico
             global_var.avail[fct].ico := global_var.default_ico
     }
@@ -192,7 +192,7 @@ main_consolidate_ico()
         if (SubStr(ico, 1 , 1) = ".")
             ico := A_ScriptDir  SubStr(ico, 2)
         else if (not SubStr(ico, 2 , 1) = ":")
-                ico := global_var.icoPath  ico
+                ico := global_var.icoPath "\" ico
         if ( ! RegExMatch(ico, "\.ico$"))
             ico :=  ico ".ico"
         if (not FileExist(ico))
@@ -270,8 +270,8 @@ main_seticons(path:="NULL")
     if (path = "NULL")
         path := global_var.icoPath
     if ( not path )
-        path := "icons\blue"
-    input_p := path
+        path := "."
+    input_p := RegExReplace(path, "/" , "\")
     if ( not InStr( FileExist(path), "D") )
         path := A_ScriptDir "\" input_p
     if ( not InStr( FileExist(path), "D") )
@@ -283,19 +283,21 @@ main_seticons(path:="NULL")
     if ( not InStr( FileExist(path), "D") )
         path := pathminus "\build\" input_p
     if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\build\icons\" input_p
+    if ( not InStr( FileExist(path), "D") )
         path := A_ScriptDir
-    global_var.icoPath := path "\"
-    global_var.default_ico := global_var.icoPath global_var.default_ico ".ico"
+    global_var.icoPath := path
+    global_var.default_ico := global_var.icoPath "\" global_var.default_ico ".ico"
     IfNotExist % global_var.default_ico
         global_var.default_ico := "294"
-    global_var.empty_ico := global_var.icoPath global_var.empty_ico ".ico"
+    global_var.empty_ico := global_var.icoPath "\" global_var.empty_ico ".ico"
     IfNotExist % global_var.empty_ico
         global_var.empty_ico := "222"
     i := 0
     global_var.icos := []
     SplitPath, A_ScriptFullPath, , , , name_no_ext
     while true {
-        file := global_var.icoPath name_no_ext "-" i ".ico"
+        file := global_var.icoPath "\" name_no_ext "-" i ".ico"
         if FileExist(file)
             global_var.icos.push(file)
         else

@@ -183,9 +183,26 @@ default_showconf(arg)
     conf := global_var.conf
     admin_conf := global_var.admin_conf
 
-    string_conf["Simple conf"] := ""
-    string_conf["Detailed conf"] := ""
-    string_conf["Full conf"] := ""
+    path := global_var.icoPath
+    SplitPath, A_ScriptDir,  , pathminus,
+    SplitPath, path, color, path,
+    if ( ( path = pathminus "\build\icons" )
+      or ( path = pathminus "\build" )
+      or ( path = pathminus "\icons" )
+      or ( path = A_ScriptDir "\icons" )
+      or ( path = pathminus )
+      or ( path = A_ScriptDir ) )
+        ico := color
+    else
+        ico := global_var.icoPath
+
+    string_conf["Detailed conf"] := "#icons`t" ico "`r`n`r`n"
+    string_conf["Full conf"] := "#icons`t" global_var.icoPath "`r`n`r`n"
+
+    if ( ico = "blue" )
+        string_conf["Simple conf"] := ""
+    else
+        string_conf["Simple conf"] := "#icons`t" ico "`r`n`r`n"
 
     loop % global_var.nb_install
     {
