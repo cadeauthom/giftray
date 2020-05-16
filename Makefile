@@ -125,7 +125,7 @@ $(ICONSDIR)/blue/%.ico: $(SVGDIR)/%.svg
 
 $(ICONSDIR)/black/%.ico: $(SVGDIR)/%.svg
 	mkdir -p $(@D)
-	sed -e s/1185E0/3c3c3c/g -e s/4DCFE0/909090/g $< \
+	sed -e s/1185E0/5a5a5a/g -e s/4DCFE0/aaaaaa/g $< \
         | $(CONVERTIMG) $(CONVERTIMGFLAGS) $@
 
 $(ICONSDIR)/red/%.ico: $(SVGDIR)/%.svg
