@@ -49,9 +49,12 @@ allfiles := allfiles ",uninstall_" project ".exe"
 keepfiles := project ".conf"
 keepfiles := keepfiles ",key.csv"
 keepdir := installdir "\" project ".conf.d"
-Loop Files, %builddir%\icons\*
+Loop Files, %builddir%\icons\*, D
 {
-    allfiles:= allfiles ",icons\" A_LoopFileName
+    color := A_LoopFileName
+    alldir := alldir "," installdir "\icons\" A_LoopFileName
+    Loop Files, %builddir%\icons\%color%\*
+        allfiles:= allfiles ",icons\" color "\" A_LoopFileName
 }
 
 ;-----------------------------------------------------

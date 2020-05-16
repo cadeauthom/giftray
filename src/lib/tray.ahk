@@ -17,6 +17,8 @@
 */
 tray_initialisation()
 {
+    if (global_var.icos.MaxIndex() > 0)
+        Menu, Tray, Icon, % global_var.icos[1] , 1
     Menu, Tray, NoStandard
     if global_var.nb_install > 0
     {
@@ -176,9 +178,11 @@ tray_Wrapper(fn)
         key := main_string_to_key(hk)
         if (! key)
             return
-        try
+        try {
             Hotkey, %key%, HKHandle
-        catch {
+            if ErrorLevel
+                msgbox , 0x10, Error, Hotkey returned "%ErrorLevel%" for "%fun%" (%key%)
+        } catch {
             MsgBox, 0x10, Error, Hotkey threw an exception: "%hk%" is not well configured for "%fun%"
         }
     }

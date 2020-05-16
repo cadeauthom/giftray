@@ -29,7 +29,7 @@ global global_var :=    {name       :   A_ScriptName    ;name of the tool
                         ,use_admin  :   0               ;use admin conf because no user conf is set
                         ,doc        :   ""              ;readme file
                         ,icos       :   []              ;tray icons
-                        ,icoPath    :   ""              ;icons path
+                        ,icoPath    :   "blue"    ;icons path
                         ,default_ico:   "default_default"
                         ,empty_ico  :   "default_empty"
                         ;information about build for "about"
@@ -62,19 +62,19 @@ main_validate_hhk(input_hhk)
     hhk := ""
     Loop , % a_hhk.MaxIndex() - 1
     {
+        key := a_hhk[A_Index]
         key := RegExReplace(key, "^(.?)[mM]aj$", "$1Shift")
         key := RegExReplace(key, "^(.?)[Ww]indows$", "$1Win")
-        if a_hhk[A_Index] = "Win"
-            key := "Win"
-        else
-            key := GetKeyName(a_hhk[A_Index])
+        if (key != "Win")
+            key := GetKeyName(key)
         if ( ! key ){
             ;msgbox % "Issue while checkink caracter: " a_hhk[A_Index]
             return
         }
-        key := RegExReplace(key, "^(.?)Control$", "$1Ctrl")
-        if ( ! global_var.modifier[key] )
-            return
+        key := RegExReplace(key, "^(.?)[Cc]ontrol$", "$1Ctrl")
+        if ( RegExMatch(key, "^[lLrR](.+)$", p))
+            if ( ! global_var.modifier[p1] )
+                return
         hhk := hhk key " + "
     }
     key := RegExReplace(a_hhk[a_hhk.MaxIndex()],"Â","")
@@ -114,7 +114,7 @@ main_string_to_key(hhk)
             ahk := ahk "<"
             s := SubStr(a_hhk[A_Index], 2)
         Case "R":
-            ahk := ahk "<"
+            ahk := ahk ">"
             s := SubStr(a_hhk[A_Index], 2)
         Default:
             s := a_hhk[A_Index]
@@ -178,15 +178,34 @@ main_GetCurrentPath(hwnd="") {
         }
     return ToReturn
 }
+main_consolidate_ico()
+{
+    for fct,av in global_var.avail
+    {
+        global_var.avail[fct].ico := global_var.icoPath "\" fct ".ico"
+        IfNotExist % global_var.avail[fct].ico
+            global_var.avail[fct].ico := global_var.default_ico
+    }
+    for fct,av in global_var.real
+    {
+        ico := global_var.real[fct].ico
+        if (SubStr(ico, 1 , 1) = ".")
+            ico := A_ScriptDir  SubStr(ico, 2)
+        else if (not SubStr(ico, 2 , 1) = ":")
+                ico := global_var.icoPath "\" ico
+        if ( ! RegExMatch(ico, "\.ico$"))
+            ico :=  ico ".ico"
+        if (not FileExist(ico))
+            ico := global_var.avail[fct].ico
+        global_var.real[fct].ico := ico
+    }
+}
 main_createMenu(arg,pos:=0)
 {
     if arg["function"]
         function := arg.Delete("function")
     else
         return
-    icon := global_var.icoPath function ".ico"
-    IfNotExist % icon
-        icon := global_var.default_ico
 
     if arg["name"]
         name := arg.Delete("name")
@@ -221,7 +240,6 @@ main_createMenu(arg,pos:=0)
         error := ""
 
     global_var.avail[function]:={ function:function
-                                    ,ico:icon
                                     ,pos:position
                                     ,print:print
                                     ,hhk:hhk
@@ -243,7 +261,49 @@ main_createMenu(arg,pos:=0)
 main_initialisation()
 {
     main_setdefault()
+    main_seticons()
     main_init_plugin()
+}
+main_seticons(path:="NULL")
+{
+    SplitPath, A_ScriptDir, , pathminus,
+    if (path = "NULL")
+        path := global_var.icoPath
+    if ( not path )
+        path := "."
+    input_p := RegExReplace(path, "/" , "\")
+    if ( not InStr( FileExist(path), "D") )
+        path := A_ScriptDir "\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := A_ScriptDir "\icons\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\icons\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\build\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\build\icons\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := A_ScriptDir
+    global_var.icoPath := path
+    global_var.default_ico := global_var.icoPath "\" global_var.default_ico ".ico"
+    IfNotExist % global_var.default_ico
+        global_var.default_ico := "294"
+    global_var.empty_ico := global_var.icoPath "\" global_var.empty_ico ".ico"
+    IfNotExist % global_var.empty_ico
+        global_var.empty_ico := "222"
+    i := 0
+    global_var.icos := []
+    SplitPath, A_ScriptFullPath, , , , name_no_ext
+    while true {
+        file := global_var.icoPath "\" name_no_ext "-" i ".ico"
+        if FileExist(file)
+            global_var.icos.push(file)
+        else
+            break
+        i++
+    }
 }
 main_setdefault()
 {
@@ -268,32 +328,6 @@ main_setdefault()
     global_var.doc := A_ScriptDir "\README.md"
     if ( not FileExist(global_var.doc) )
         global_var.doc := pathminus "\README.md"
-    global_var.icoPath := A_ScriptDir "\icons\"
-    if ( not InStr( FileExist(global_var.icoPath), "D") )
-        global_var.icoPath := pathminus "\icons\"
-    if ( not InStr( FileExist(global_var.icoPath), "D") )
-        global_var.icoPath := pathminus "\build\icons\"
-    global_var.default_ico := global_var.icoPath global_var.default_ico ".ico"
-    IfNotExist % global_var.default_ico
-        global_var.default_ico := "294"
-    global_var.empty_ico := global_var.icoPath global_var.empty_ico ".ico"
-    IfNotExist % global_var.empty_ico
-        global_var.empty_ico := "222"
-    i := 0
-    while true {
-        file := global_var.icoPath name_no_ext "-" i ".ico"
-        if FileExist(file)
-        {
-            global_var.icos.push(file)
-            i++
-        }
-        else
-        {
-            break
-        }
-    }
-    if (global_var.icos.MaxIndex() > 0)
-        Menu, Tray, Icon, % global_var.icos[1] , 1
 }
 main_init_plugin(key:="all")
 {

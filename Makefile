@@ -21,22 +21,25 @@ AHKRUN = /mnt/c/Program\ Files/AutoHotkey/AutoHotkey.exe
 AHKRUNFLAGS = /ErrorStdOut
 #CONVERTIMG = /mnt/c/Program\ Files/ImageMagick-7.0.8-Q16/magick.exe
 CONVERTIMG = /usr/bin/convert
-CONVERTIMGFLAGS = -background none -define icon:auto-resize=32
+CONVERTIMGFLAGS = -background none -define icon:auto-resize=32 svg:-
 #COMPRESS = /mnt/c/Program\ Files/AutoHotkey/Compiler/mpress.exe
 #COMPRESS = ./upx-3.95-win64/upx.exe
 COMPRESS = /usr/bin/upx
-COMPRESSFLAGS = --ultra-brute
+COMPRESSFLAGS = --ultra-brute --compress-icons=0
 
 PROJECT = giftray
+default_color = blue
 
 BUILDDIR = ./build
 INSTALLDIR = ./install
 SRCDIR = ./src
 SVGDIR = ./svg
 CONFDIR = ./conf
-ICONSDIR = $(BUILDDIR)/icons
+ICOPATH = icons
+ICONSDIR = $(BUILDDIR)/$(ICOPATH)
 
 SRCS = $(SRCDIR)/$(PROJECT).ahk
+LIBS = $(wildcard  $(SRCDIR)/lib/*.ahk)
 SRCINSTALL = $(SRCDIR)/setup.ahk
 EXEC = $(BUILDDIR)/$(PROJECT).exe
 
@@ -45,9 +48,12 @@ SETUP = $(INSTALLDIR)/setup_$(PROJECT).exe
 AHKUNINSTALL = $(BUILDDIR)/uninstall_$(PROJECT).ahk
 UNINSTALL = $(BUILDDIR)/uninstall_$(PROJECT).exe
 
-ICO = $(ICONSDIR)/$(PROJECT)-0.ico
+ICO = $(ICONSDIR)/$(default_color)/$(PROJECT)-0.ico
 SVG = $(wildcard $(SVGDIR)/*.svg)
-ICOS = $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/%.ico, $(SVG))
+ICOS_BLUE   =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/blue/%.ico, $(SVG))
+ICOS_BLACK  =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/black/%.ico,$(SVG))
+ICOS_RED    =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/red/%.ico,  $(SVG))
+ICOS_GREEN  =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/green/%.ico,$(SVG))
 
 CONFSRC = $(wildcard $(CONFDIR)/*.conf)
 CONF = $(patsubst $(CONFDIR)/%, $(BUILDDIR)/%, $(CONFSRC))
@@ -66,7 +72,7 @@ exec: $(EXEC)
 
 conf: $(CONF) $(CSV)
 
-ico: $(ICOS)
+ico: $(ICOS_BLUE) $(ICOS_BLACK) $(ICOS_RED) $(ICOS_GREEN)
 
 doc: $(DOC)
 
@@ -88,13 +94,14 @@ $(SETUP): $(AHKINSTALL) $(UNINSTALL) all
 	$(AHKEXE) $(AHKEXEFLAG) /in $< /icon $(ICO) /out $@
 	if [ -f $(COMPRESS) ]; then $(COMPRESS) $(COMPRESSFLAGS) $@; fi;
 
-$(EXEC): $(SRCS) $(ICO)
+$(EXEC): $(SRCS) $(LIBS) $(ICO)
 	mkdir -p $(@D)
-	@echo "globla_var.buildinfo.branch := \"$$(git rev-parse --abbrev-ref HEAD)\"" > $(PRECOMPIL)
-	@echo "globla_var.buildinfo.commit := \"$$(git log -1 --pretty=format:'%h')\"" >> $(PRECOMPIL)
-	@echo "globla_var.buildinfo.modif  := \"$$(git status --porcelain -uno | wc -l)\""  >> $(PRECOMPIL)
-	@echo "globla_var.buildinfo.date   := \"$$(date '+%Y%m%d%H%M%S')\""   >> $(PRECOMPIL)
-	@echo "globla_var.buildinfo.tag	   := \"$$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))\""   >> $(PRECOMPIL)
+	@echo "global_var.buildinfo.branch := \"$$(git rev-parse --abbrev-ref HEAD)\"" > $(PRECOMPIL)
+	@echo "global_var.buildinfo.commit := \"$$(git log -1 --pretty=format:'%h')\"" >> $(PRECOMPIL)
+	@echo "global_var.buildinfo.modif  := \"$$(git status --porcelain -uno | wc -l)\""  >> $(PRECOMPIL)
+	@echo "global_var.buildinfo.date   := \"$$(date '+%Y%m%d%H%M%S')\""   >> $(PRECOMPIL)
+	@echo "global_var.buildinfo.tag    := \"$$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))\""   >> $(PRECOMPIL)
+	@echo "global_var.icoPath          := \"$(ICOPATH)\\\\$(default_color)\\\""   >> $(PRECOMPIL)
 	$(AHKEXE) $(AHKEXEFLAG) /in $< /icon $(ICO) /out $@
 	mv $(PRECOMPIL) $(BUILDDIR)/
 	if [ -f $(COMPRESS) ]; then $(COMPRESS) $(COMPRESSFLAGS) $@; fi;
@@ -111,9 +118,25 @@ $(DOC): $(DOCSRC)
 	mkdir -p $(@D)
 	cp $< $@
 
-$(ICONSDIR)/%.ico: $(SVGDIR)/%.svg
+$(ICONSDIR)/blue/%.ico: $(SVGDIR)/%.svg
 	mkdir -p $(@D)
-	$(CONVERTIMG) $(CONVERTIMGFLAGS) $< $@
+	cat $< \
+        | $(CONVERTIMG) $(CONVERTIMGFLAGS)  $@
+
+$(ICONSDIR)/black/%.ico: $(SVGDIR)/%.svg
+	mkdir -p $(@D)
+	sed -e s/1185E0/3c3c3c/g -e s/4DCFE0/909090/g $< \
+        | $(CONVERTIMG) $(CONVERTIMGFLAGS) $@
+
+$(ICONSDIR)/red/%.ico: $(SVGDIR)/%.svg
+	mkdir -p $(@D)
+	sed -e s/1185E0/ED664C/g -e s/4DCFE0/FDC75B/g $< \
+        | $(CONVERTIMG) $(CONVERTIMGFLAGS) $@
+
+$(ICONSDIR)/green/%.ico: $(SVGDIR)/%.svg
+	mkdir -p $(@D)
+	sed -e s/1185E0/32CD32/g -e s/4DCFE0/7CFC00/g $< \
+        | $(CONVERTIMG) $(CONVERTIMGFLAGS) $@
 
 mrproper: clean
 	rm -f $(SETUP)
@@ -126,4 +149,4 @@ clean: cleanexe
 	rm -rf $(BUILDDIR)/*.conf
 	rm -rf $(BUILDDIR)/*.csv
 	rm -rf $(BUILDDIR)/*.md
-	rm -rf $(BUILDDIR)/icons/
+	rm -rf $(ICONSDIR)/*/*.ico

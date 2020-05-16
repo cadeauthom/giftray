@@ -43,4 +43,5 @@ SetWorkingDir %A_ScriptDir%
 ;------------------------------------------------------------
 main_initialisation()
 configuration_initialisation()
+main_consolidate_ico()
 tray_initialisation()

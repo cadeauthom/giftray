@@ -36,7 +36,7 @@ windows_init()
                         ,hhk:"Win + <"
                         ,device:"Capture/Playback"})
     main_createMenu(    {name:"Volume Change"
-                        ,function:"windows_volume"
+                        ,function:"windows_Volume"
                         ,hhk:"Alt + NumpadSub" ;NumpadAdd
                         ,quick:1
                         ,not_in_menu:1
@@ -45,7 +45,7 @@ windows_init()
 
     return
 }
-windows_volume(args, test:=0)
+windows_Volume(args, test:=0)
 {
     error_msg := ""
     if args["device"]
