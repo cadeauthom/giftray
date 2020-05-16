@@ -28,6 +28,7 @@ configuration_readconf(file)
     conf_hash := {}
     current := 0
     comment := 0
+    start := 0
     tmp := {}
     if (FileExist(file))
     {
@@ -47,7 +48,13 @@ configuration_readconf(file)
                     comment := 0
                 continue
             }
+            if ( RegExMatch(key, "^#icon\s+(.+)$", p))
+                if start
+                    continue
+                else
+                    main_seticons(p1)
             if ( RegExMatch(key, "^#include\s+(.*)$", p)) {
+                start := 1
                 while RegExMatch(p1, "^(\S*)\s+(.*)$", q){
                     p1 := q2
                     if (not conf_hash[q1]) {
@@ -69,6 +76,7 @@ configuration_readconf(file)
                 continue
             if (boolinit) {
                 current := c1
+                start := 1
                 continue
             }
             if (first = "}") {
@@ -84,6 +92,7 @@ configuration_readconf(file)
                 continue
             }
             configuration_build_menu(key,{})
+            start := 1
         }
     }
 }
@@ -250,18 +259,7 @@ configuration_cp_default(tmp,orig)
     if ( !tmp.function )
         tmp.function := orig.function
     if ( !tmp.ico )
-        tmp.ico := orig.ico
-    else {
-        if (SubStr(tmp.ico, 1 , 1) = ".")
-            tmp.ico := A_ScriptDir  SubStr(tmp.ico, 2)
-        else
-            if (not SubStr(tmp.ico, 2 , 1) = ":")
-                tmp.ico := global_var.icoPath  tmp.ico
-        if ( ! RegExMatch(tmp.ico, "\.ico$"))
-            tmp.ico :=  tmp.ico ".ico"
-        if (not FileExist(tmp.ico))
-            tmp.ico := orig.ico
-    }
+        tmp.ico := tmp.function
     ;tmp.pos ; stay to 0
     if ( !tmp.print )
         tmp.print := orig.print

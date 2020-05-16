@@ -178,15 +178,34 @@ main_GetCurrentPath(hwnd="") {
         }
     return ToReturn
 }
+main_consolidate_ico()
+{
+    for fct,av in global_var.avail
+    {
+        global_var.avail[fct].ico := global_var.icoPath fct ".ico"
+        IfNotExist % global_var.avail[fct].ico
+            global_var.avail[fct].ico := global_var.default_ico
+    }
+    for fct,av in global_var.real
+    {
+        ico := global_var.real[fct].ico
+        if (SubStr(ico, 1 , 1) = ".")
+            ico := A_ScriptDir  SubStr(ico, 2)
+        else if (not SubStr(ico, 2 , 1) = ":")
+                ico := global_var.icoPath  ico
+        if ( ! RegExMatch(ico, "\.ico$"))
+            ico :=  ico ".ico"
+        if (not FileExist(ico))
+            ico := global_var.avail[fct].ico
+        global_var.real[fct].ico := ico
+    }
+}
 main_createMenu(arg,pos:=0)
 {
     if arg["function"]
         function := arg.Delete("function")
     else
         return
-    icon := global_var.icoPath function ".ico"
-    IfNotExist % icon
-        icon := global_var.default_ico
 
     if arg["name"]
         name := arg.Delete("name")
@@ -221,7 +240,6 @@ main_createMenu(arg,pos:=0)
         error := ""
 
     global_var.avail[function]:={ function:function
-                                    ,ico:icon
                                     ,pos:position
                                     ,print:print
                                     ,hhk:hhk
@@ -243,7 +261,47 @@ main_createMenu(arg,pos:=0)
 main_initialisation()
 {
     main_setdefault()
+    main_seticons()
     main_init_plugin()
+}
+main_seticons(path:="NULL")
+{
+    SplitPath, A_ScriptDir, , pathminus,
+    if (path = "NULL")
+        path := global_var.icoPath
+    if ( not path )
+        path := "icons\blue"
+    input_p := path
+    if ( not InStr( FileExist(path), "D") )
+        path := A_ScriptDir "\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := A_ScriptDir "\icons\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\icons\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := pathminus "\build\" input_p
+    if ( not InStr( FileExist(path), "D") )
+        path := A_ScriptDir
+    global_var.icoPath := path "\"
+    global_var.default_ico := global_var.icoPath global_var.default_ico ".ico"
+    IfNotExist % global_var.default_ico
+        global_var.default_ico := "294"
+    global_var.empty_ico := global_var.icoPath global_var.empty_ico ".ico"
+    IfNotExist % global_var.empty_ico
+        global_var.empty_ico := "222"
+    i := 0
+    global_var.icos := []
+    SplitPath, A_ScriptFullPath, , , , name_no_ext
+    while true {
+        file := global_var.icoPath name_no_ext "-" i ".ico"
+        if FileExist(file)
+            global_var.icos.push(file)
+        else
+            break
+        i++
+    }
 }
 main_setdefault()
 {
@@ -268,30 +326,6 @@ main_setdefault()
     global_var.doc := A_ScriptDir "\README.md"
     if ( not FileExist(global_var.doc) )
         global_var.doc := pathminus "\README.md"
-    global_var.icoPath := A_ScriptDir "\icons\"
-    if ( not InStr( FileExist(global_var.icoPath), "D") )
-        global_var.icoPath := pathminus "\icons\"
-    if ( not InStr( FileExist(global_var.icoPath), "D") )
-        global_var.icoPath := pathminus "\build\icons\"
-    global_var.default_ico := global_var.icoPath global_var.default_ico ".ico"
-    IfNotExist % global_var.default_ico
-        global_var.default_ico := "294"
-    global_var.empty_ico := global_var.icoPath global_var.empty_ico ".ico"
-    IfNotExist % global_var.empty_ico
-        global_var.empty_ico := "222"
-    i := 0
-    while true {
-        file := global_var.icoPath name_no_ext "-" i ".ico"
-        if FileExist(file)
-        {
-            global_var.icos.push(file)
-            i++
-        }
-        else
-        {
-            break
-        }
-    }
 }
 main_init_plugin(key:="all")
 {
