@@ -113,7 +113,7 @@ tray_initialisation()
                     ,global_var.avail[key].function
                     ,global_var.avail[key].ico
                     ,global_var.avail[key].quick
-                    ,[])
+                    ,global_var.avail[key].arg)
     }
     Menu, Tray, Tip, % global_var.name
 }
