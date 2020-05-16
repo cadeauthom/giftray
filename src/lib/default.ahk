@@ -22,6 +22,12 @@ default_init()
         return true
     called := true
     int_pos:=-1
+    dl := default_update_test()
+    if ( dl )
+        main_createMenu(    {name:"Update"
+                            ,function:"default_update"
+                            ,dl:dl}
+                            ,int_pos--)
     main_createMenu(    {name:"HotKey generator"
                         ,function:"default_generator"}
                         ,int_pos--)
@@ -50,6 +56,8 @@ default_init()
     return true
 }
 /*
+default_update_test
+default_update
 default_generator
 default_showconf
 default_about
@@ -65,6 +73,35 @@ default_hotkey
 default_open
 default_help
 */
+default_update_test()
+{
+    if ( ! global_var.buildinfo.tag )
+        return
+    try
+    {
+        url := "https://api.github.com/repos/cadeauthom/giftray/releases/latest"
+        whr := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+        whr.Open("GET", url, true)
+        whr.Send()
+        whr.WaitForResponse()
+        value := Jxon_Load( whr.ResponseText )
+        if ( value.tag_name > global_var.buildinfo.tag )
+            return value.assets[1].browser_download_url
+    }
+    return
+}
+default_update(arg)
+{
+    if ( ! arg.dl )
+        return
+    url := arg.dl
+    SplitPath, url, file,
+    Try
+    {
+        URLDownloadToFile, % url, % A_temp "\" file
+        run, % A_temp "\" file
+    }
+}
 default_generator(arg)
 {
     global
@@ -319,6 +356,8 @@ default_About(arg)
     Gui,99:Add,Link,y+10,This tool was made using <a href="https://www.AutoHotkey.com">AutoHotkey</a>
     Gui,99:Font
     Gui,99:Add,Link, y+5,Sound control function are part of <a href="https://autohotkey.com/board/topic/21984-vista-audio-control-functions/">VA librairy</a>
+    Gui,99:Font
+    Gui,99:Add,Link, y+5,JSON function are part of <a href="https://www.autohotkey.com/boards/viewtopic.php?f=6&t=627">Jxon lib</a>
 
     Gui,99:Add, Picture, xm y+20 w32 h-1,
     Gui,99:Font,Bold
