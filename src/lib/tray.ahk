@@ -178,9 +178,11 @@ tray_Wrapper(fn)
         key := main_string_to_key(hk)
         if (! key)
             return
-        try
+        try {
             Hotkey, %key%, HKHandle
-        catch {
+            if ErrorLevel
+                msgbox , 0x10, Error, Hotkey returned "%ErrorLevel%" for "%fun%" (%key%)
+        } catch {
             MsgBox, 0x10, Error, Hotkey threw an exception: "%hk%" is not well configured for "%fun%"
         }
     }

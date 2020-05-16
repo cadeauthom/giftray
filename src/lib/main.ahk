@@ -62,19 +62,19 @@ main_validate_hhk(input_hhk)
     hhk := ""
     Loop , % a_hhk.MaxIndex() - 1
     {
+        key := a_hhk[A_Index]
         key := RegExReplace(key, "^(.?)[mM]aj$", "$1Shift")
         key := RegExReplace(key, "^(.?)[Ww]indows$", "$1Win")
-        if a_hhk[A_Index] = "Win"
-            key := "Win"
-        else
-            key := GetKeyName(a_hhk[A_Index])
+        if (key != "Win")
+            key := GetKeyName(key)
         if ( ! key ){
             ;msgbox % "Issue while checkink caracter: " a_hhk[A_Index]
             return
         }
-        key := RegExReplace(key, "^(.?)Control$", "$1Ctrl")
-        if ( ! global_var.modifier[key] )
-            return
+        key := RegExReplace(key, "^(.?)[Cc]ontrol$", "$1Ctrl")
+        if ( RegExMatch(key, "^[lLrR](.+)$", p))
+            if ( ! global_var.modifier[p1] )
+                return
         hhk := hhk key " + "
     }
     key := RegExReplace(a_hhk[a_hhk.MaxIndex()],"Â","")
@@ -114,7 +114,7 @@ main_string_to_key(hhk)
             ahk := ahk "<"
             s := SubStr(a_hhk[A_Index], 2)
         Case "R":
-            ahk := ahk "<"
+            ahk := ahk ">"
             s := SubStr(a_hhk[A_Index], 2)
         Default:
             s := a_hhk[A_Index]
