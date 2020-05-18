@@ -77,10 +77,10 @@ main_validate_hhk(input_hhk)
                 return
         hhk := hhk key " + "
     }
-    key := RegExReplace(a_hhk[a_hhk.MaxIndex()],"Â","")
+    key := a_hhk[a_hhk.MaxIndex()]
     key := GetKeyName(key)
     if ( ! key ){
-        ;msgbox % "Issue while checkink caracter: " a_hhk[A_Index]
+        ;msgbox % "Issue while checkink caracter: " a_hhk[a_hhk.MaxIndex()]
         return
     }
     if (key.length() > 1)
@@ -125,7 +125,9 @@ main_string_to_key(hhk)
         else
             return
     }
-    return ahk a_hhk[a_hhk.MaxIndex()]
+    last := a_hhk[a_hhk.MaxIndex()]
+    last :=  GetKeyName(last)
+    return ahk last
 }
 main_ExecScript(Script, Wait:=true)
 {

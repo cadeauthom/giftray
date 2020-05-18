@@ -36,6 +36,8 @@ SendMode Input
 ; Ensures a consistent starting directory.
 SetWorkingDir %A_ScriptDir%
 
+FileEncoding , UTF-8
+
 #Include <main>
 #Include *i compil.ahk
 
