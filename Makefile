@@ -40,13 +40,14 @@ ICONSDIR = $(BUILDDIR)/$(ICOPATH)
 
 SRCS = $(SRCDIR)/$(PROJECT).ahk
 LIBS = $(wildcard  $(SRCDIR)/lib/*.ahk)
-SRCINSTALL = $(SRCDIR)/setup.ahk
 EXEC = $(BUILDDIR)/$(PROJECT).exe
 
 AHKINSTALL = $(BUILDDIR)/setup_$(PROJECT).ahk
+INSTALL_SRC = $(SRCDIR)/set.ahk
+INSTALL_AHK = $(BUILDDIR)/set.ahk
+INSTALL_BUILDER = $(SRCDIR)/setup.ahk
+INSTALL_LIB = $(BUILDDIR)/lib/setup_built.ahk
 SETUP = $(INSTALLDIR)/setup_$(PROJECT).exe
-AHKUNINSTALL = $(BUILDDIR)/uninstall_$(PROJECT).ahk
-UNINSTALL = $(BUILDDIR)/uninstall_$(PROJECT).exe
 
 ICO = $(ICONSDIR)/$(default_color)/$(PROJECT)-0.ico
 SVG = $(wildcard $(SVGDIR)/*.svg)
@@ -76,20 +77,15 @@ ico: $(ICOS_BLUE) $(ICOS_BLACK) $(ICOS_RED) $(ICOS_GREEN)
 
 doc: $(DOC)
 
-$(AHKUNINSTALL): $(SRCINSTALL) ico
+$(INSTALL_AHK): $(INSTALL_SRC)
 	mkdir -p $(@D)
-	$(AHKRUN) $(AHKRUNFLAGS) $< $(PROJECT)
+	cp $< $@
 	
-$(AHKINSTALL): $(SRCINSTALL) ico
+$(INSTALL_LIB): $(INSTALL_BUILDER)
 	mkdir -p $(@D)
-	$(AHKRUN) $(AHKRUNFLAGS) $< $(PROJECT)
-	
-$(UNINSTALL): $(AHKUNINSTALL)
-	mkdir -p $(@D)
-	$(AHKEXE) $(AHKEXEFLAG) /in $< /icon $(ICO) /out $@
-	if [ -f $(COMPRESS) ]; then $(COMPRESS) $(COMPRESSFLAGS) $@; fi;
+	$(AHKRUN) $(AHKRUNFLAGS) $< $(PROJECT) $@
 
-$(SETUP): $(AHKINSTALL) $(UNINSTALL) all
+$(SETUP): $(INSTALL_AHK) $(INSTALL_LIB) all
 	mkdir -p $(@D)
 	$(AHKEXE) $(AHKEXEFLAG) /in $< /icon $(ICO) /out $@
 	if [ -f $(COMPRESS) ]; then $(COMPRESS) $(COMPRESSFLAGS) $@; fi;

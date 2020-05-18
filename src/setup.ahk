@@ -18,9 +18,25 @@
 #SingleInstance force
 #NoTrayIcon
 
-;Gui, Add, Progress, w200 h20 cBlue vMyProgress, 75
-;GuiControl,, MyProgress, +20  ; Increase the current position by 20.
-;GuiControl,, MyProgress, 50  ; Set the current position to 50.
+;Gui, Add, Progress, w200 h20 cBlue vprogress, 75
+;GuiControl,, progress, +20  ; Increase the current position by 20.
+;GuiControl,, progress, 50  ; Set the current position to 50.
+
+if A_Args[1]
+    project := A_Args[1]
+else
+    exit -1
+
+if A_Args[2]
+    fileout := A_Args[2]
+else
+    fileout := "build\lib\setup_built.ahk"
+
+fileout := RegExReplace(fileout, "/" , "\")
+
+SplitPath, fileout, , pathminus,
+SplitPath, pathminus, , builddir,
+installdir := A_Temp "\" project
 
 SplitPath, A_ScriptDir, dir, pathminus,
 if ( dir = "src" )
@@ -29,111 +45,97 @@ else
     SetWorkingDir %A_ScriptDir%
 
 ;-----------------------------------------------------
-if A_Args[1]
-    project := A_Args[1]
-else
-    exit -1
-installdir := a_ProgramFiles "\" project
-builddir := "build"
-fileout := builddir "\setup_" project ".ahk"
-fileun := builddir "\uninstall_" project ".ahk"
+var:={}
+var.exe := ""
+var.menu_dir := ""
+var.menu_files := []
+var.install_dir := []
+var.install_files := []
+var.start_files := []
+var.conf_dir := []
+var.conf_files := []
 
-;-----------------------------------------------------
-alldir := installdir
-alldir := alldir "," installdir "\icons"
-menu := A_StartMenuCommon "\" project
-alldir := alldir "," menu
-allfiles := project ".exe"
-allfiles := allfiles ",README.md"
-allfiles := allfiles ",uninstall_" project ".exe"
-keepfiles := project ".conf"
-keepfiles := keepfiles ",key.csv"
-keepdir := installdir "\" project ".conf.d"
+var.exe := project ".exe"
+
+var.menu_dir := A_StartMenuCommon "\" project
+
+var.install_dir.push(installdir)
+var.install_dir.push(installdir "\icons")
+
+var.install_files.push("README.md")
+
+
 Loop Files, %builddir%\icons\*, D
 {
     color := A_LoopFileName
-    alldir := alldir "," installdir "\icons\" A_LoopFileName
+    var.install_dir.push(installdir "\icons\" color)
     Loop Files, %builddir%\icons\%color%\*
-        allfiles:= allfiles ",icons\" color "\" A_LoopFileName
+        var.install_files.push("icons\" color "\" A_LoopFileName)
 }
 
-;-----------------------------------------------------
-FileDelete % fileout
-FileDelete % fileun
+var.start_files.push(var.exe)
+var.start_files.push("setup_" var.exe)
 
-;---- admin
-text2 := "#SingleInstance force`r"
-text2 := text2 "#NoTrayIcon`r"
-text2 := text2 "if not (A_IsAdmin)`r{`r"
-text2 := text2 "`ttry Run *RunAs ""`%A_ScriptFullPath`%""`r"
-text2 := text2 "`treturn`r}`r`r"
-text := text2
+var.conf_dir.push(installdir "\" project ".conf.d")
+var.conf_files.push(project ".conf")
+Loop Files, %builddir%\%project%.conf.d\*
+    var.install_files.push(project ".conf.d" A_LoopFileName)
+var.conf_files.push("key.csv")
 
-;---- msgbox
-text := text "MsgBox, 0x21, " project ", Install " project " tool ?`r"
-text := text "IfMsgBox, OK`r`tinstall()`r"
-text2 := text2 "MsgBox, 0x23, " project ", You are trying to remove " project " tool. Do you want to keep configuration files ?`r"
-text2 := text2 "IfMsgBox, YES`r`t`tremove(1)`r"
-text2 := text2 "IfMsgBox, NO`r`t`tremove(0)`r"
+tab:="`t"
 
-;---- function
-text := text "`rinstall()`r{`r"
-text2 := text2 "`rremove(keep)`r{`r"
+fct:=[]
+fct.push("setup_built_install(){")
+for i,d in var.install_dir
+    fct.push(tab "FileCreateDir, " d)
+for i,d in var.conf_dir
+    fct.push(tab "FileCreateDir, " d)
+for i,file in var.install_files
+    fct.push(tab "FileInstall, " file ",  " installdir "\" file " , 1")
+for i,file in var.conf_files
+    fct.push(tab "FileInstall, " file ",  " installdir "\" file " , 1")
+fct.push(tab "return """ var.install_dir[1] """")
+fct.push("}")
 
-;---- dir (install)
-for i,dir in StrSplit(alldir , ",")
-    text := text "`tFileCreateDir, " dir "`r"
-for i,dir in StrSplit(keepdir , ",")
-    text := text "`tFileCreateDir, " dir "`r"
+fct.push("")
 
-;---- files & shortcut
-for i,file in StrSplit(allfiles , ",")
-{
-    text := text "`tFileInstall, " file ",  " installdir "\" file " , 1`r"
-    text2 := text2 "`tFileDelete " file "`r"
+fct.push("setup_built_shortcut(dir, boot, menu){")
+fct.push(tab "if boot {")
+fct.push(tab tab "FileCreateShortcut  , %dir%\" var.exe ", " A_StartupCommon "\" project ".lnk , %dir%, , Menu and HotKeys for simpler usage.,")
+fct.push(tab "}")
+fct.push(tab "if menu {")
+for i,file in var.start_files
     if ( RegExMatch(file, "(.*)\.exe$",lnk) )
-    {
-        text := text "`tFileCreateShortcut  , " installdir "\" file " , " menu "\" lnk1 ".lnk , " installdir "\,,,`r"
-        text2 := text2 "`tFileDelete " menu "\" lnk1 ".lnk`r"
-    }
-}
+        fct.push(tab tab "FileCreateShortcut  , %dir%\" file " , " var.menu_dir "\" lnk1 ".lnk , %dir%,,,")
+fct.push(tab "}")
+fct.push(tab "return """ var.exe """")
+fct.push("}")
 
-;---- conf files
-text2 := text2 "`tif (not keep)`r`t{`r"
-for i,file in StrSplit(keepfiles , ",")
-{
-    text := text "`tFileInstall, " file ",  " installdir "\" file " , 0`r"
-    text2 := text2 "`t`tFileDelete " file "`r"
-}
-text2 := text2 "`t}`r"
+fct.push("")
 
-;---- startup shortcut
-text := text "`tFileCreateShortcut  , " installdir "\" project ".exe ," A_StartupCommon "\" project ".lnk , " installdir "\,,Menu and HotKeys for simpler usage.,"
-text2 := text2 "`tFileDelete " A_StartupCommon "\" project ".lnk`r"
+fct.push("setup_built_save_conf(dir){")
+fct.push(tab "FileRemoveDir, " var.install_dir[1] ", 1")
+fct.push(tab "FileCreateDir, " var.install_dir[1])
+for i,d in var.conf_dir
+    fct.push(tab "FileCopyDir, %dir%/" d ", " var.install_dir[1] "/" d)
+for i,file in var.conf_files
+    fct.push(tab "FileCopy, %dir%/" file ", " var.install_dir[1] "/")
+fct.push(tab "return """ var.install_dir[1] """")
+fct.push("}")
 
-;---- dir (remove)
-a:=StrSplit(keepdir , ",")
-l:=a.Length()
-text2 := text2 "`tif (not keep)`r`t{`r"
-loop % l
-{
-    dir := a[l - A_Index + 1]
-    text2 := text2 "`tFileRemoveDir, " dir ",0`r"
-}
-text2 := text2 "`t}`r"
-a:=StrSplit(alldir , ",")
-l:=a.Length()
-loop % l
-{
-    dir := a[l - A_Index + 1]
-    text2 := text2 "`tFileRemoveDir, " dir ",0`r"
-}
+fct.push("")
 
-;---- end
-text := text "`r}"
-text2 := text2 "}"
+fct.push("setup_built_rm_start(){")
+fct.push(tab "FileDelete " A_StartupCommon "\" project ".lnk")
+fct.push(tab "return")
+fct.push("}")
 
-FileAppend, %text%, %fileout%
-FileAppend, %text2%, %fileun%
+line := ""
+for a,l in fct
+    line := line l "`r`n"
+
+
+FileDelete % fileout
+FileAppend, %line%, %fileout%
 
 return
