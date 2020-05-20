@@ -58,6 +58,8 @@ ICOS_GREEN  =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/green/%.ico,$(SVG))
 
 CONFSRC = $(wildcard $(CONFDIR)/*.conf)
 CONF = $(patsubst $(CONFDIR)/%, $(BUILDDIR)/%, $(CONFSRC))
+CONFDSRC = $(wildcard $(CONFDIR)/$(PROJECT).conf.d/*.conf)
+CONFD = $(patsubst $(CONFDIR)/$(PROJECT).conf.d/%, $(BUILDDIR)/$(PROJECT).conf.d/%, $(CONFDSRC))
 CSVSRC = $(wildcard $(CONFDIR)/*.csv)
 CSV = $(patsubst $(CONFDIR)/%, $(BUILDDIR)/%, $(CSVSRC))
 DOCSRC = README.md
@@ -71,7 +73,7 @@ compil: $(SETUP)
 
 exec: $(EXEC)
 
-conf: $(CONF) $(CSV)
+conf: $(CONF) $(CSV) $(CONFD)
 
 ico: $(ICOS_BLUE) $(ICOS_BLACK) $(ICOS_RED) $(ICOS_GREEN)
 
@@ -103,6 +105,10 @@ $(EXEC): $(SRCS) $(LIBS) $(ICO)
 	if [ -f $(COMPRESS) ]; then $(COMPRESS) $(COMPRESSFLAGS) $@; fi;
 
 $(CONF): $(CONFSRC)
+	mkdir -p $(@D)
+	cp $< $@
+
+$(CONFD): $(CONFDSRC)
 	mkdir -p $(@D)
 	cp $< $@
 

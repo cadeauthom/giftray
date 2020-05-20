@@ -79,12 +79,18 @@ var.start_files.push("setup_" var.exe)
 var.conf_dir.push(installdir "\" project ".conf.d")
 var.conf_files.push(project ".conf")
 Loop Files, %builddir%\%project%.conf.d\*
-    var.install_files.push(project ".conf.d" A_LoopFileName)
+    var.install_files.push(project ".conf.d\" A_LoopFileName)
 var.conf_files.push("key.csv")
 
 tab:="`t"
 
 fct:=[]
+fct.push("setup_built_project(){")
+fct.push(tab "return """ project """")
+fct.push("}")
+
+fct.push("")
+
 fct.push("setup_built_install(){")
 for i,d in var.install_dir
     fct.push(tab "FileCreateDir, " d)
@@ -94,6 +100,8 @@ for i,file in var.install_files
     fct.push(tab "FileInstall, " file ",  " installdir "\" file " , 1")
 for i,file in var.conf_files
     fct.push(tab "FileInstall, " file ",  " installdir "\" file " , 1")
+fct.push(tab "FileInstall, " var.exe ",  " installdir "\" var.exe " , 1")
+fct.push(tab "FileCopy, %A_ScriptFullPath%, " installdir "\%A_ScriptName% , 1")
 fct.push(tab "return """ var.install_dir[1] """")
 fct.push("}")
 
@@ -126,6 +134,7 @@ fct.push("}")
 fct.push("")
 
 fct.push("setup_built_rm_start(){")
+fct.push(tab "FileRemoveDir, " var.menu_dir ", 1")
 fct.push(tab "FileDelete " A_StartupCommon "\" project ".lnk")
 fct.push(tab "return")
 fct.push("}")
