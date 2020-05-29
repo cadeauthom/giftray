@@ -132,7 +132,8 @@ main_string_to_key(hhk)
 main_ExecScript(Script, Wait:=true)
 {
     shell := ComObjCreate("WScript.Shell")
-    s := "cmd /c title " script " &  " script
+    ;s := "cmd /c title " script " &  " script
+    s := "powershell -Command  ""$host.ui.RawUI.WindowTitle='" script "'; " script """"
     ;s :=  script
     exec := shell.Exec(s)
     if Wait
