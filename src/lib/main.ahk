@@ -169,7 +169,7 @@ main_GetPath(app)
 main_GetCurrentPath(hwnd="") {
     WinGet, process, processName, % "ahk_id" hwnd := hwnd? hwnd:WinExist("A")
     ToReturn := ""
-    if (process = "explorer.exe")
+    if (process = "explorer.exe") {
         WinGetClass class, ahk_id %hwnd%
         if (class = "WorkerW") {
             ; Bureau
@@ -179,6 +179,7 @@ main_GetCurrentPath(hwnd="") {
                     ToReturn := window.Document.Folder.Self.path
                 ToReturn := Trim(ToReturn,"`n")
         }
+    }
     return ToReturn
 }
 main_consolidate_ico()
