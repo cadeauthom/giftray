@@ -179,6 +179,11 @@ main_GetCurrentPath(hwnd="") {
                     ToReturn := window.Document.Folder.Self.path
                 ToReturn := Trim(ToReturn,"`n")
         }
+    } else {
+        WinGetTitle, Title, A
+        SplitPath, Title, , OutDir
+        if( InStr( FileExist(OutDir), "D") )
+            ToReturn = % OutDir
     }
     return ToReturn
 }
