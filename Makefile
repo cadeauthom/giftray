@@ -24,17 +24,18 @@ CONVERTIMG = /usr/bin/convert
 CONVERTIMGFLAGS = -background none -define icon:auto-resize=32 svg:-
 #COMPRESS = /mnt/c/Program\ Files/AutoHotkey/Compiler/mpress.exe
 #COMPRESS = ./upx-3.95-win64/upx.exe
-COMPRESS = /usr/bin/upx
+COMPRESS = /usr/bin/upx_FAKE
 COMPRESSFLAGS = --ultra-brute --compress-icons=0
 
 PROJECT = giftray
 default_color = blue
 
-BUILDDIR = ./build
-INSTALLDIR = ./install
-SRCDIR = ./src
-SVGDIR = ./svg
-CONFDIR = ./conf
+SRC_DIR = ./
+BUILDDIR = $(SRC_DIR)build
+INSTALLDIR = $(SRC_DIR)install
+SRCDIR = $(SRC_DIR)src
+SVGDIR = $(SRC_DIR)svg
+CONFDIR = $(SRC_DIR)conf
 ICOPATH = icons
 ICONSDIR = $(BUILDDIR)/$(ICOPATH)
 
@@ -55,6 +56,7 @@ ICOS_BLUE   =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/blue/%.ico, $(SVG))
 ICOS_BLACK  =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/black/%.ico,$(SVG))
 ICOS_RED    =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/red/%.ico,  $(SVG))
 ICOS_GREEN  =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/green/%.ico,$(SVG))
+ICOS_WHITE  =   $(patsubst $(SVGDIR)/%.svg, $(ICONSDIR)/white/%.ico,$(SVG))
 
 CONFSRC = $(wildcard $(CONFDIR)/*.conf)
 CONF = $(patsubst $(CONFDIR)/%, $(BUILDDIR)/%, $(CONFSRC))
@@ -75,7 +77,7 @@ exec: $(EXEC)
 
 conf: $(CONF) $(CSV) $(CONFD)
 
-ico: $(ICOS_BLUE) $(ICOS_BLACK) $(ICOS_RED) $(ICOS_GREEN)
+ico: $(ICOS_BLUE) $(ICOS_BLACK) $(ICOS_RED) $(ICOS_GREEN) $(ICOS_WHITE)
 
 doc: $(DOC)
 
@@ -100,7 +102,7 @@ $(EXEC): $(SRCS) $(LIBS) $(ICO)
 	@echo "global_var.buildinfo.date   := \"$$(date '+%Y%m%d%H%M%S')\""   >> $(PRECOMPIL)
 	@echo "global_var.buildinfo.tag    := \"$$(git describe --exact-match --tags $(git log -n1 --pretty='%h'))\""   >> $(PRECOMPIL)
 	@echo "global_var.icoPath          := \"$(ICOPATH)\\\\$(default_color)\\\""   >> $(PRECOMPIL)
-	$(AHKEXE) $(AHKEXEFLAG) /in $< /icon $(ICO) /out $@
+	$(AHKEXE) $(AHKEXEFLAG) /in $< /icon .$(ICO) /out ../$@
 	mv $(PRECOMPIL) $(BUILDDIR)/
 	if [ -f $(COMPRESS) ]; then $(COMPRESS) $(COMPRESSFLAGS) $@; fi;
 
@@ -138,6 +140,11 @@ $(ICONSDIR)/red/%.ico: $(SVGDIR)/%.svg
 $(ICONSDIR)/green/%.ico: $(SVGDIR)/%.svg
 	mkdir -p $(@D)
 	sed -e s/1185E0/32CD32/g -e s/4DCFE0/7CFC00/g $< \
+        | $(CONVERTIMG) $(CONVERTIMGFLAGS) $@
+
+$(ICONSDIR)/white/%.ico: $(SVGDIR)/%.svg
+	mkdir -p $(@D)
+	sed -e s/1185E0/FFFFFF/g -e s/4DCFE0/616161/g $< \
         | $(CONVERTIMG) $(CONVERTIMGFLAGS) $@
 
 mrproper: clean
